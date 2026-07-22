@@ -18,22 +18,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  var faqItems = document.querySelectorAll("[data-faq-toggle]");
-  faqItems.forEach(function (item) {
-    item.addEventListener("click", function () {
-      item.classList.toggle("open");
-    });
-  });
-
   var form = document.querySelector("#contact-form");
   if (form) {
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var status = form.querySelector(".form-status");
-      if (status) {
-        status.textContent = "Thanks — we'll get back to you within one business day.";
-      }
-      form.reset();
+      var button = form.querySelector("button[type=submit]");
+      button.disabled = true;
+      if (status) status.textContent = "Sending...";
+
+      fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        headers: { Accept: "application/json" }
+      })
+        .then(function (response) {
+          if (response.ok) {
+            if (status) status.textContent = "Thanks — we'll get back to you within one business day.";
+            form.reset();
+          } else {
+            if (status) status.textContent = "Something went wrong — please email us directly at hello@joinaichat.com instead.";
+          }
+        })
+        .catch(function () {
+          if (status) status.textContent = "Something went wrong — please email us directly at hello@joinaichat.com instead.";
+        })
+        .finally(function () {
+          button.disabled = false;
+        });
     });
   }
 
